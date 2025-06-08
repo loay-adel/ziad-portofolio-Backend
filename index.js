@@ -78,11 +78,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 // Graceful shutdown
 process.on("SIGINT", () => {
   mongoose.connection.close(() => {
