@@ -3,14 +3,20 @@ const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
 const app = express();
+const heroRoutes = require("./routes/hero");
+const bookRoutes = require("./routes/books");
+const researchPaperRoutes = require("./routes/researchPapers");
+const courseRoutes = require("./routes/courses");
+const dashboardRoutes = require("./routes/dashboards");
+const certificateRoutes = require("./routes/certificates");
+const mobileAppRoutes = require("./routes/mobileApps");
+const uploadRoutes = require("./routes/upload");
+const authRoutes = require("./routes/auth");
 const PORT = process.env.PORT || 5000;
 
 // Database connection
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
