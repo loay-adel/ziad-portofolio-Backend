@@ -9,6 +9,12 @@ const researchPaperSchema = new mongoose.Schema({
     enum: ["Coming Soon", "Published"],
     default: "Coming Soon",
   },
+  links: [
+    {
+      label: { type: String, required: true },
+      url: { type: String, required: true },
+    },
+  ],
   year: { type: Number, required: true },
   image: { type: String, required: true },
 });

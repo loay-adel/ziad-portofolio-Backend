@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 // File filter
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif/;
+  const allowedTypes = /jpeg|jpg|png|gif|avif/;
   const extname = allowedTypes.test(
     path.extname(file.originalname).toLowerCase()
   );
@@ -28,14 +28,14 @@ const fileFilter = (req, file, cb) => {
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error("Only images are allowed (jpeg, jpg, png, gif)"));
+    cb(new Error("Only images are allowed (jpeg, jpg, png, gif,avif)"));
   }
 };
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 5MB limit
 });
 
 router.post("/", upload.single("image"), (req, res) => {
