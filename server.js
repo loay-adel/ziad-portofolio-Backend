@@ -25,14 +25,13 @@ mongoose
 
 const corsOptions = {
   origin: [
-    "http://localhost:5173",
-    "https://ziadabdullah.com",
-    process.env.CLIENT_ORIGIN, // Use environment variable
+    process.env.NODE_ENV === "production"
+      ? process.env.CLIENT_ORIGIN
+      : "http://localhost:5173",
   ],
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 };
-
 // Middleware - FIXED: Increased payload limits
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "250mb" }));
