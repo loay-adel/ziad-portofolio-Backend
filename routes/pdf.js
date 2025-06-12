@@ -48,25 +48,28 @@ const upload = multer({
 router.post("/", upload.single("pdf"), (req, res) => {
   try {
     if (!req.file) {
-      return res
-        .status(400)
-        .json({ error: "No file uploaded or file too large" });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileUrl = `/pdfs/${req.file.filename}`;
+    // Use absolute URL for production
+    const fileUrl = `${req.protocol}://${req.get("host")}/pdfs/${
+      req.file.filename
+    }`;
+
     res.status(201).json({ fileUrl });
   } catch (error) {
-    if (error.code === "LIMIT_FILE_SIZE") {
-      return res
-        .status(413)
-        .json({ error: "File too large. Max 25MB allowed." });
-    }
-    if (error.code === "LIMIT_UNEXPECTED_FILE") {
-      return res.status(400).json({ error: "Too many files uploaded." });
-    }
     console.error("Upload error:", error);
     res.status(500).json({ error: "Failed to upload file" });
   }
 });
+router.get("/exists/:filename", (req, res) => {
+  const filePath = path.join(pdfDir, req.params.filename);
 
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      return res.status(404).json({ exists: false });
+    }
+    res.json({ exists: true });
+  });
+});
 module.exports = router;

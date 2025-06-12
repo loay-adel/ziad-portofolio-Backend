@@ -25,12 +25,21 @@ mongoose
 
 // Middleware - FIXED: Increased payload limits
 app.use(cors());
-app.use(express.json({ limit: "250mb" })); 
-app.use(express.urlencoded({ extended: true, limit: "250mb" })); 
+app.use(express.json({ limit: "250mb" }));
+app.use(express.urlencoded({ extended: true, limit: "250mb" }));
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use("/pdfs", express.static(path.join(__dirname, "pdfs")));
+app.use(
+  "/pdfs",
+  express.static(path.join(__dirname, "pdfs"), {
+    setHeaders: (res, path) => {
+      if (path.endsWith(".pdf")) {
+        res.set("Content-Type", "application/pdf");
+      }
+    },
+  })
+);
 
 // Routes
 app.use("/api/hero", heroRoutes);
@@ -57,6 +66,13 @@ app.use((err, req, res, next) => {
   }
 
   res.status(500).json({ error: "Internal Server Error" });
+});
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    pdfDirectory: pdfDir,
+    files: fs.readdirSync(pdfDir).filter((f) => f.endsWith(".pdf")),
+  });
 });
 
 // Start server
