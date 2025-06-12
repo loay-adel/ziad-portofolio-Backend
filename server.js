@@ -25,8 +25,8 @@ mongoose
 
 // Middleware - FIXED: Increased payload limits
 app.use(cors());
-app.use(express.json({ limit: "250mb" })); // Increased from default 100kb
-app.use(express.urlencoded({ extended: true, limit: "250mb" })); // Increased from default 100kb
+app.use(express.json({ limit: "250mb" })); 
+app.use(express.urlencoded({ extended: true, limit: "250mb" })); 
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
