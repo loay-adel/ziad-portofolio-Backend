@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
-const app = express();
 const cors = require("cors");
 const heroRoutes = require("./routes/hero");
 const bookRoutes = require("./routes/books");
@@ -15,27 +14,38 @@ const uploadRoutes = require("./routes/upload");
 const pdfRoutes = require("./routes/pdf");
 const authRoutes = require("./routes/auth");
 const aboutRoutes = require("./routes/about");
+
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Database connection
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// CORS configuration
 const corsOptions = {
-  origin: [
-    process.env.NODE_ENV === "production"
-      ? process.env.CLIENT_ORIGIN
-      : "http://localhost:5173",
-  ],
+  origin: (origin, callback) => {
+    const allowedOrigins = [process.env.CLIENT_ORIGIN, "http://localhost:5173"];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 };
-// Middleware - FIXED: Increased payload limits
+
+// Middleware
 app.use(cors(corsOptions));
-app.use(express.json({ limit: "250mb" }));
-app.use(express.urlencoded({ extended: true, limit: "250mb" }));
+app.use(express.json({ limit: "220mb" }));
+app.use(express.urlencoded({ extended: true, limit: "220mb" }));
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
@@ -63,25 +73,28 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/pdf", pdfRoutes);
 app.use("/api/about", aboutRoutes);
 
-// Error handling
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-
-  // Handle payload too large errors specifically
-  if (err instanceof SyntaxError && err.status === 413 && "body" in err) {
-    return res
-      .status(413)
-      .json({ error: "Payload too large. Maximum 50MB allowed." });
-  }
-
-  res.status(500).json({ error: "Internal Server Error" });
-});
+// Health check endpoint
 app.get("/health", (req, res) => {
+  const pdfDir = path.join(__dirname, "pdfs");
   res.json({
     status: "ok",
     pdfDirectory: pdfDir,
     files: fs.readdirSync(pdfDir).filter((f) => f.endsWith(".pdf")),
   });
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ error: "CORS policy violation" });
+  }
+  if (err instanceof SyntaxError && err.status === 413 && "body" in err) {
+    return res
+      .status(413)
+      .json({ error: "Payload too large. Maximum 120MB allowed." });
+  }
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 // Start server
