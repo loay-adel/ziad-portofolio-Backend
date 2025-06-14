@@ -24,7 +24,7 @@ const upload = multer({
     /\.pdf$/i.test(file.originalname) && file.mimetype === "application/pdf"
       ? cb(null, true)
       : cb(new Error("Only PDF files allowed")),
-  limits: { fileSize: 220 * 1024 * 1024 }, // 220MB
+  limits: { fileSize: 250 * 1024 * 1024 }, // 250MB
 });
 
 // Upload route

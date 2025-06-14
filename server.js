@@ -43,9 +43,10 @@ const corsOptions = {
 };
 
 // Middleware
+app.options("*", cors(corsOptions));
 app.use(cors(corsOptions));
-app.use(express.json({ limit: "220mb" }));
-app.use(express.urlencoded({ extended: true, limit: "220mb" }));
+app.use(express.json({ limit: "250mb" }));
+app.use(express.urlencoded({ extended: true, limit: "250mb" }));
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
