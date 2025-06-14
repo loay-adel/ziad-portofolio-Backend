@@ -39,7 +39,7 @@ const corsOptions = {
 // Middleware pipeline
 app.use(cors(corsOptions)); // Apply CORS first
 
-// Body parsing
+// Body parsing for JSON and URL-encoded data
 app.use(express.json({ limit: "250mb" }));
 app.use(express.urlencoded({ extended: true, limit: "250mb" }));
 
@@ -68,7 +68,7 @@ app.use("/api/certificates", require("./routes/certificates"));
 app.use("/api/mobile-apps", require("./routes/mobileApps"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/upload", require("./routes/upload"));
-app.use("/api/pdf", require("./routes/pdf"));
+app.use("/api/pdf", require("./routes/pdf")); // Assumes multer is configured here
 app.use("/api/about", require("./routes/about"));
 
 // Enhanced health check
@@ -93,7 +93,7 @@ app.get("/health", (req, res) => {
 
 // Error handling with CORS headers
 app.use((err, req, res, next) => {
-  // Apply CORS headers to error responses
+  // Ensure CORS headers are set for all error responses
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
