@@ -49,7 +49,16 @@ app.use(express.urlencoded({ extended: true, limit: "220mb" }));
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use("/pdfs", express.static(path.join(__dirname, "pdfs")));
+// In your server.js file
+app.use(
+  "/pdfs",
+  express.static(path.join(__dirname, "pdfs"), {
+    setHeaders: (res) => {
+      res.set("Access-Control-Allow-Origin", "*");
+      res.set("Access-Control-Allow-Methods", "GET");
+    },
+  })
+);
 
 // Routes
 app.use("/api/hero", heroRoutes);
