@@ -17,13 +17,25 @@ mongoose
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   "http://localhost:5173",
+  "https://api.ziadabdullah.com/",
   "https://ziadabdullah.com",
   "https://www.ziadabdullah.com",
 ];
 
+//CORS configuration
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (
+      !origin ||
+      allowedOrigins.some((allowed) => {
+        return (
+          origin === allowed ||
+          origin.includes(
+            allowed.replace("https://", "").replace("http://", "")
+          )
+        );
+      })
+    ) {
       callback(null, true);
     } else {
       console.warn(`CORS blocked: ${origin}`);
@@ -34,14 +46,17 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
   optionsSuccessStatus: 200,
+  maxAge: 86400,
 };
+
+// Add preflight handling
 
 // Middleware pipeline
 app.use(cors(corsOptions)); // Apply CORS first
 
 // Body parsing for JSON and URL-encoded data
-app.use(express.json({ limit: "250mb" }));
-app.use(express.urlencoded({ extended: true, limit: "250mb" }));
+app.use(express.json({ limit: "2500mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2500mb" }));
 
 // Static files with CORS headers
 const staticHeaders = (res) => {
