@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
 const cors = require("cors");
+const fs = require("fs"); // Added for health check
 const heroRoutes = require("./routes/hero");
 const bookRoutes = require("./routes/books");
 const researchPaperRoutes = require("./routes/researchPapers");
@@ -30,7 +31,11 @@ mongoose
 // CORS configuration
 const corsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = [process.env.CLIENT_ORIGIN, "http://localhost:5173"];
+    const allowedOrigins = [
+      process.env.CLIENT_ORIGIN,
+      "http://localhost:5173",
+      "https://ziadabdullah.com",
+    ];
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -42,15 +47,16 @@ const corsOptions = {
   credentials: true,
 };
 
-// Middleware
-app.options("*", cors(corsOptions));
+// Apply CORS middleware first
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Enable preflight for all routes
+
+// Increase payload limits
 app.use(express.json({ limit: "250mb" }));
 app.use(express.urlencoded({ extended: true, limit: "250mb" }));
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
-// In your server.js file
 app.use(
   "/pdfs",
   express.static(path.join(__dirname, "pdfs"), {
@@ -77,23 +83,37 @@ app.use("/api/about", aboutRoutes);
 // Health check endpoint
 app.get("/health", (req, res) => {
   const pdfDir = path.join(__dirname, "pdfs");
-  res.json({
-    status: "ok",
-    pdfDirectory: pdfDir,
-    files: fs.readdirSync(pdfDir).filter((f) => f.endsWith(".pdf")),
-  });
+  // Check if pdfDir exists
+  if (fs.existsSync(pdfDir)) {
+    res.json({
+      status: "ok",
+      pdfDirectory: pdfDir,
+      files: fs.readdirSync(pdfDir).filter((f) => f.endsWith(".pdf")),
+    });
+  } else {
+    res.status(500).json({
+      status: "error",
+      message: "PDF directory not found",
+    });
+  }
 });
 
 // Error handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
+
+  // Add CORS headers to error responses
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
   if (err.message === "Not allowed by CORS") {
     return res.status(403).json({ error: "CORS policy violation" });
   }
-  if (err instanceof SyntaxError && err.status === 413 && "body" in err) {
+  if (err.status === 413 || (err instanceof SyntaxError && "body" in err)) {
     return res
       .status(413)
-      .json({ error: "Payload too large. Maximum 120MB allowed." });
+      .json({ error: "Payload too large. Maximum 250MB allowed." });
   }
   res.status(500).json({ error: "Internal Server Error" });
 });
