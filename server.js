@@ -49,16 +49,7 @@ app.use(express.urlencoded({ extended: true, limit: "220mb" }));
 
 // Static files
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use(
-  "/pdfs",
-  express.static(path.join(__dirname, "pdfs"), {
-    setHeaders: (res, path) => {
-      if (path.endsWith(".pdf")) {
-        res.set("Content-Type", "application/pdf");
-      }
-    },
-  })
-);
+app.use("/pdfs", express.static(path.join(__dirname, "pdfs")));
 
 // Routes
 app.use("/api/hero", heroRoutes);
